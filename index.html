@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>AI Assistant</h2>
+
+<input id="input" placeholder="Ketik..." />
+<button onclick="send()">Kirim</button>
+
+<p id="output"></p>
+
+<script>
+async function send() {
+  const text = document.getElementById("input").value;
+
+  document.getElementById("output").innerText = "hmm...";
+
+  await new Promise(r => setTimeout(r, 700));
+
+  const res = await fetch("/api/chat", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      system: "Kamu asisten santai, tidak kaku, kadang bilang 'hmm' atau 'oke'",
+      messages: [{ role: "user", content: text }]
+    })
+  });
+
+  const data = await res.json();
+  const reply = data.choices[0].message.content;
+
+  // tampilkan text
+  document.getElementById("output").innerText = reply;
+
+  // TTS
+  const tts = await fetch("/api/tts", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ text: reply })
+  });
+
+  const blob = await tts.blob();
+  const url = URL.createObjectURL(blob);
+
+  new Audio(url).play();
+}
+</script>
+
+</body>
+</html>
